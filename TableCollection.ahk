@@ -40,6 +40,7 @@ F3::{
 
 class Functions{
 
+    ;Adds data to file in script directory CarInputInfo.txt
 	CollectData(){
 		filePath := A_ScriptDir "\CarInputInfo.txt"
 		x := 40

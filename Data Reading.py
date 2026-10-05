@@ -2,7 +2,8 @@ import numpy as np
 
 np.set_printoptions(threshold=np.inf, suppress=True)
 
-arr = np.loadtxt(r"C:\Users\yugoy\OneDrive\Desktop\Coding\AutoHotKey\CarInputInfo.txt",delimiter="\t",encoding="utf-8-sig")
+#Change FILENAME to location of data file
+arr = np.loadtxt(r"FILENAME",delimiter="\t",encoding="utf-8-sig")
 
 np.set_printoptions()
 
