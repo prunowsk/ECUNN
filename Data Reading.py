@@ -3,10 +3,11 @@ import numpy as np
 np.set_printoptions(threshold=np.inf, suppress=True)
 
 #Change FILENAME to location of data file
-arr = np.loadtxt(r"FILENAME",delimiter="\t",encoding="utf-8-sig")
+arr = np.loadtxt(r"C:\Users\yugoy\OneDrive\Desktop\Coding\AutoHotKey\CarInputInfo.txt",delimiter="\t",encoding="utf-8-sig")
 
 np.set_printoptions()
 
+#Seperates tables
 fLow = arr[0:20,:]
 fHigh = arr[20:40,:]
 wotLow = arr[40:60,:]
@@ -14,7 +15,7 @@ wotHigh = arr[60:80,:]
 ignLow = arr[80:100,:]
 ignHigh = arr[100:120,:]
 
-
+#Used to check proper tables were gathered
 # print(fLow ,"\n")
 # print(fHigh ,"\n")
 # print(fHigh,"\n")
@@ -23,6 +24,7 @@ ignHigh = arr[100:120,:]
 # print(ignLow, "\n")
 # print(ignHigh ,"\n")
 
+#Checks every line on the graph is smaller than the one above it
 def lesser(array):
     for i in range(len(array)):
         for j in range(len(array[i]) - 1):
@@ -30,6 +32,7 @@ def lesser(array):
                 return False
     return True
 
+#Checks every line on the table is greater than the one above it
 def greater(array):
     for i in range(len(array)):
         for j in range(len(array[i]) - 1):
