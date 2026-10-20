@@ -133,7 +133,7 @@ class L15A1_sim:
             tested_fuel = baseline_fuel + np.random.uniform(-400,400)
 
             mbt_guess = self.calculate_mbt_ignition(rpm,map_mbar)
-            tested_ignition = np.random.uniform(mbt_guess-10.0,mbt_guess+5.0)
+            tested_ignition = np.random.uniform(mbt_guess-10.0,mbt_guess+12.0)
 
             step_result = self.simulate_step(rpm,map_mbar,tested_fuel,tested_ignition,target_afr,iat_c)
             data_rows.append(step_result)
@@ -141,6 +141,6 @@ class L15A1_sim:
         return pd.DataFrame(data_rows)
 
 sim = L15A1_sim()
-df = sim.generate_dataset(sample=5)
+df = sim.generate_dataset(sample=100)
 print(df.to_string(index=False))
     
