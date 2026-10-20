@@ -6,14 +6,14 @@ import pandas as pd
 class L15A1_sim:
     def __init__(self):
         #specs of engine and their meanings will be here
-        self.displacement = 14997.0 * 1e-6 #displacement in cubic meters
+        self.displacement = 1497.0 * 1e-6 #displacement in cubic meters
         self.cylinders = 4 #number of cylinders in the engine
         self.stoich_afr = 14.7 #stoichiometric air/fuel ratio is 14.7g air to 1g fuel
         self.air_constant = 287.05 #number of joules required to raise the temp of air by 1 deg C
 
         #Axis for our tables
         #OEM redline is set to a maximum of 6500 rpm, however this will be a race engine and we will be revving to 7k
-        self.rpm_axis = np.array([400,600,800,1000,12001,1400,1500,1700,2000,2300,2500,2700,3000,3300,3500,4000,4500,4800,5000,5500.6000,6300,6500,7000])
+        self.rpm_axis = np.array([400,600,800,1000,1200,1400,1500,1700,2000,2300,2500,2700,3000,3300,3500,4000,4500,4800,5000,5500,6000,6300,6500,7000])
         #using mbar as the base to make the math a little easier
         self.map_axis = np.array([120,205,290,403,573,742,855,912,968,1000])
 
@@ -36,7 +36,7 @@ class L15A1_sim:
                 #mass of fuel is based on the estimated mass of air
                 target_fuel = estimated_air/self.stoich_afr
                 #hold the arbitrary fuel int into the table
-                self.fuel_table = int(target_fuel/self.hondata_fuel_scalar)
+                self.fuel_table[i,j] = int(target_fuel/self.hondata_fuel_scalar)
 
     def bilinear_interpolate_grid(self, axis_x, axis_y, grid_matrix, x_val, y_val):
         """Standard spatial blending function reusable for any 2D matrix surface."""
@@ -65,7 +65,7 @@ class L15A1_sim:
         map_pull = (map_mbar/1000.0) * 15.0
         return np.clip(base_advance+rpm_adv-map_pull,5.0,42.0)
 
-    def simulate_step(self,rpm,map_mbar,custom_table_raw_val,ign_adv, iat_c=30.0):
+    def simulate_step(self,rpm,map_mbar,custom_table_raw_val,ign_adv,target_afr = 14.7, iat_c=30.0):
         #first estimate air density
         pres_pa=map_mbar * 100.0
         temp_k = iat_c + 273.15
@@ -77,9 +77,9 @@ class L15A1_sim:
         #use the scalar value and input fuel table val to estimate fuel mass
         fuel_mass = custom_table_raw_val * self.hondata_fuel_scalar
 
-        #use this to calculate the actual afr and then the lambda val compared to stoich
+        #use this to calculate the actual afr and then the lambda val compared to target afr
         actual_afr=trapped_air_mass/max(fuel_mass,1e-6)
-        lambda_val = actual_afr/self.stoich_afr
+        lambda_val = actual_afr/target_afr
 
         #calc ignition timing and spark delta
         mbt_spark=self.calculate_mbt_ignition(rpm,map_mbar)
@@ -99,7 +99,7 @@ class L15A1_sim:
         if(ign_adv > knock_threshold):
             severity = ign_adv - knock_threshold
             knock_count = int(np.random.poisson(lam=severity * 1.5))
-            simulated_torque *= np.clip(1.0-(knock_count * 0.08),0.2,0.1)
+            simulated_torque *= np.clip(1.0-(knock_count * 0.08),0.1,1.0)
 
         #fake out sensor noise for realism and to add more randomness to training data
         simulated_torque += np.random.normal(0,0.5)
@@ -108,6 +108,8 @@ class L15A1_sim:
         return{
             "RPM": int(rpm),
             "MAP_mbar": int(map_mbar),
+            "Target_AFR": float(target_afr),
+            "Intake_temp": float(iat_c),
             "VE_Physical": round(true_ve,3),
             "Hondata_Raw_Fuel": int(custom_table_raw_val),
             "Ignition_Advance_Deg": round(ign_adv,1),
@@ -121,6 +123,9 @@ class L15A1_sim:
         for i in range(sample):
             rpm = np.random.uniform(800,7000)
             map_mbar = np.random.uniform(120,1000)
+            #adding these to simulate varied target afrs and different ambient temperatures
+            target_afr = np.random.uniform(12.5,14.7)
+            iat_c = np.random.uniform(15.0,35.0)
             #find our baseline map
             baseline_fuel = self.bilinear_interpolate_grid(self.rpm_axis,self.map_axis,self.fuel_table,rpm,map_mbar)
 
@@ -130,15 +135,12 @@ class L15A1_sim:
             mbt_guess = self.calculate_mbt_ignition(rpm,map_mbar)
             tested_ignition = np.random.uniform(mbt_guess-10.0,mbt_guess+5.0)
 
-            step_result = self.simulate_step(rpm,map_mbar,tested_fuel,tested_ignition)
+            step_result = self.simulate_step(rpm,map_mbar,tested_fuel,tested_ignition,target_afr,iat_c)
             data_rows.append(step_result)
 
         return pd.DataFrame(data_rows)
 
-
-
-
-
-
-
+sim = L15A1_sim()
+df = sim.generate_dataset(sample=5)
+print(df.to_string(index=False))
     
