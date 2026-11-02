@@ -16,13 +16,13 @@ ignLow = arr[80:100,:]
 ignHigh = arr[100:120,:]
 
 #Used to check proper tables were gathered
-# print(fLow ,"\n")
-# print(fHigh ,"\n")
-# print(fHigh,"\n")
-# print(wotLow ,"\n")
-# print(wotHigh ,"\n")
-# print(ignLow, "\n")
-# print(ignHigh ,"\n")
+print(fLow ,"\n")
+print(fHigh ,"\n")
+print(fHigh,"\n")
+print(wotLow ,"\n")
+print(wotHigh ,"\n")
+print(ignLow, "\n")
+print(ignHigh ,"\n")
 
 #Checks every line on the graph is smaller than the one above it
 def lesser(array):
@@ -41,8 +41,8 @@ def greater(array):
                 return False
     return True
 
-print(lesser(fLow))
-print(lesser(fHigh))
-print(greater(ignLow))
-print(greater(ignHigh))
+#print(lesser(fLow))
+#print(lesser(fHigh))
+#print(greater(ignLow))
+#print(greater(ignHigh))
 
