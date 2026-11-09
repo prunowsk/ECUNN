@@ -13,7 +13,7 @@ np.random.seed(42)
 
 initialization = sim.generate_dataset(sample=25000)
 
-X_initialization = initialization[["RPM", "MAP_mbar", "Target_AFR", "Intake_Temp", "Hondata_Raw_Fuel"]].to_numpy()
+X_initialization = initialization[["RPM", "MAP_mbar", "Target_AFR", "Intake_temp", "Hondata_Raw_Fuel"]].to_numpy()
 Ys_initialization = initialization[["Ignition_Advance_Deg"]].to_numpy().reshape(-1,1)
 Yf_initialization = (initialization["Simulated_AFR"] / initialization["Target_AFR"]).to_numpy().reshape(-1,1)
 
@@ -34,11 +34,11 @@ class SimEngineData(Dataset):
         self.Ys = torch.tensor(scaler_Ys.transform(Ys_data), dtype=torch.float32)
         self.Yf = torch.tensor(scaler_Yf.transform(Yf_data), dtype=torch.float32)
 
-        def __len__(self):
-            return len(self.X)
+    def __len__(self):
+        return len(self.X)
 
-        def __getitem__(self, idx):
-            return self.X[idx], self.Ys[idx], self.Yf[idx]
+    def __getitem__(self, idx):
+        return self.X[idx], self.Ys[idx], self.Yf[idx]
 
 
 
@@ -112,13 +112,13 @@ for epoch in range(num_epochs):
         prediction_ignition = IgnitionModel(batch_X)
         loss_ignition = criterion(prediction_ignition, batch_Ys)
         loss_ignition.backward()
-        IgnitionModel.step()
+        IOptimizer.step()
 
         FuelRatioModel.zero_grad()
         prediction_fuelratio = FuelRatioModel(batch_X)
         loss_fuelratio = criterion(prediction_fuelratio, batch_Yf)
-        loss_ignition.backward()
-        FuelRatioModel.step()
+        loss_fuelratio.backward()
+        FROptimizer.step()
 
     IScheduler.step()
     FRScheduler.step()
